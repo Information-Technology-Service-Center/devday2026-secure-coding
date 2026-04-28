@@ -1,0 +1,143 @@
+services:
+  # DefectDojo services
+  dojo-nginx:
+    image: "defectdojo/defectdojo-nginx:${NGINX_VERSION:-latest}"
+    depends_on:
+      - dojo-uwsgi
+    environment:
+      NGINX_METRICS_ENABLED: "${NGINX_METRICS_ENABLED:-false}"
+      DD_UWSGI_HOST: "${DD_UWSGI_HOST:-dojo-uwsgi}"
+      DD_UWSGI_PORT: "${DD_UWSGI_PORT:-3031}"
+    volumes:
+      - defectdojo_media:/usr/share/nginx/html/media
+    ports:
+      - "${DD_PORT:-18083}:8080"
+
+  dojo-uwsgi:
+    image: "defectdojo/defectdojo-django:${DJANGO_VERSION:-latest}"
+    depends_on:
+      - dojo-initializer
+    environment:
+      DD_DATABASE_URL: "${DD_DATABASE_URL:-postgresql://defectdojo:defectdojo@dojo-postgres:5432/defectdojo}"
+      DD_CELERY_BROKER_URL: "${DD_CELERY_BROKER_URL:-redis://dojo-valkey:6379/0}"
+      DD_SECRET_KEY: "${DD_SECRET_KEY:-hhZCp@D28z!n@NED*yB!ROMt+WzsY*iq}"
+      DD_CREDENTIAL_AES_256_KEY: "${DD_CREDENTIAL_AES_256_KEY:-&91a*agLqesc*0DJ+2*bAbsUZfR*4nLw}"
+      DD_ALLOWED_HOSTS: "${DD_ALLOWED_HOSTS:-localhost,127.0.0.1,dojo-nginx,*.app.github.dev}"
+      DD_CSRF_TRUSTED_ORIGINS: "${DD_CSRF_TRUSTED_ORIGINS:-https://*.app.github.dev,https://localhost:18083,http://localhost:18083}"
+    volumes:
+      - "defectdojo_media:${DD_MEDIA_ROOT:-/app/media}"
+
+  dojo-celeryworker:
+    image: "defectdojo/defectdojo-django:${DJANGO_VERSION:-latest}"
+    depends_on:
+      - dojo-uwsgi
+    entrypoint: ['/entrypoint-celery-worker.sh']
+    environment:
+      DD_DATABASE_URL: "${DD_DATABASE_URL:-postgresql://defectdojo:defectdojo@dojo-postgres:5432/defectdojo}"
+      DD_CELERY_BROKER_URL: "${DD_CELERY_BROKER_URL:-redis://dojo-valkey:6379/0}"
+      DD_SECRET_KEY: "${DD_SECRET_KEY:-hhZCp@D28z!n@NED*yB!ROMt+WzsY*iq}"
+      DD_CREDENTIAL_AES_256_KEY: "${DD_CREDENTIAL_AES_256_KEY:-&91a*agLqesc*0DJ+2*bAbsUZfR*4nLw}"
+      DD_ALLOWED_HOSTS: "${DD_ALLOWED_HOSTS:-localhost,127.0.0.1,dojo-nginx,*.app.github.dev}"
+    volumes:
+      - "defectdojo_media:${DD_MEDIA_ROOT:-/app/media}"
+
+  dojo-celerybeat:
+    image: "defectdojo/defectdojo-django:${DJANGO_VERSION:-latest}"
+    depends_on:
+      - dojo-uwsgi
+    entrypoint: ['/entrypoint-celery-beat.sh']
+    environment:
+      DD_DATABASE_URL: "${DD_DATABASE_URL:-postgresql://defectdojo:defectdojo@dojo-postgres:5432/defectdojo}"
+      DD_CELERY_BROKER_URL: "${DD_CELERY_BROKER_URL:-redis://dojo-valkey:6379/0}"
+      DD_SECRET_KEY: "${DD_SECRET_KEY:-hhZCp@D28z!n@NED*yB!ROMt+WzsY*iq}"
+      DD_CREDENTIAL_AES_256_KEY: "${DD_CREDENTIAL_AES_256_KEY:-&91a*agLqesc*0DJ+2*bAbsUZfR*4nLw}"
+      DD_ALLOWED_HOSTS: "${DD_ALLOWED_HOSTS:-localhost,127.0.0.1,dojo-nginx,*.app.github.dev}"
+    volumes:
+      - "defectdojo_media:${DD_MEDIA_ROOT:-/app/media}"
+
+  dojo-migrate:
+    image: "defectdojo/defectdojo-django:${DJANGO_VERSION:-latest}"
+    depends_on:
+      - dojo-postgres
+      - dojo-valkey
+    command: ["python", "manage.py", "migrate"]
+    environment:
+      DD_DATABASE_URL: "${DD_DATABASE_URL:-postgresql://defectdojo:defectdojo@dojo-postgres:5432/defectdojo}"
+      DD_CELERY_BROKER_URL: "${DD_CELERY_BROKER_URL:-redis://dojo-valkey:6379/0}"
+      DD_SECRET_KEY: "${DD_SECRET_KEY:-hhZCp@D28z!n@NED*yB!ROMt+WzsY*iq}"
+      DD_CREDENTIAL_AES_256_KEY: "${DD_CREDENTIAL_AES_256_KEY:-&91a*agLqesc*0DJ+2*bAbsUZfR*4nLw}"
+
+  dojo-initializer:
+    image: "defectdojo/defectdojo-django:${DJANGO_VERSION:-latest}"
+    depends_on:
+      - dojo-migrate
+    entrypoint: ['/wait-for-it.sh', 'dojo-postgres:5432', '--', '/entrypoint-initializer.sh']
+    environment:
+      DD_DATABASE_URL: "${DD_DATABASE_URL:-postgresql://defectdojo:defectdojo@dojo-postgres:5432/defectdojo}"
+      DD_ADMIN_USER: "${DD_ADMIN_USER:-admin}"
+      DD_ADMIN_MAIL: "${DD_ADMIN_MAIL:-admin@defectdojo.local}"
+      DD_ADMIN_FIRST_NAME: "${DD_ADMIN_FIRST_NAME:-Admin}"
+      DD_ADMIN_LAST_NAME: "${DD_ADMIN_LAST_NAME:-User}"
+      DD_INITIALIZE: "${DD_INITIALIZE:-true}"
+      DD_SECRET_KEY: "${DD_SECRET_KEY:-hhZCp@D28z!n@NED*yB!ROMt+WzsY*iq}"
+      DD_CREDENTIAL_AES_256_KEY: "${DD_CREDENTIAL_AES_256_KEY:-&91a*agLqesc*0DJ+2*bAbsUZfR*4nLw}"
+      DD_CSRF_TRUSTED_ORIGINS: "${DD_CSRF_TRUSTED_ORIGINS:-https://*.app.github.dev,https://localhost:18083,http://localhost:18083}"
+      DD_DATABASE_READINESS_TIMEOUT: "${DD_DATABASE_READINESS_TIMEOUT:-30}"
+
+  dojo-postgres:
+    image: postgres:16.2
+    environment:
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_DB: ${DD_DATABASE_NAME:-defectdojo}
+      POSTGRES_USER: ${DD_DATABASE_USER:-defectdojo}
+      POSTGRES_PASSWORD: ${DD_DATABASE_PASSWORD:-defectdojo}
+    volumes:
+      - defectdojo_postgres:/var/lib/postgresql/data
+
+  dojo-valkey:
+    image: valkey/valkey:7-alpine
+    volumes:
+      - defectdojo_redis:/data
+
+  # Dependency-Track services
+  dtrack-apiserver:
+    image: dependencytrack/apiserver:4.11.6
+    environment:
+      - ALPINE_DATABASE_MODE=external
+      - ALPINE_DATABASE_URL=jdbc:postgresql://dtrack-postgres:5432/dtrack
+      - ALPINE_DATABASE_DRIVER=org.postgresql.Driver
+      - ALPINE_DATABASE_USERNAME=dtrack
+      - ALPINE_DATABASE_PASSWORD=dtrack
+      # Integration with DefectDojo
+      - DEFECTDOJO_ENABLED=true
+      - DEFECTDOJO_URL=http://dojo-nginx:8080
+      - DEFECTDOJO_API_KEY=${DEFECTDOJO_API_KEY:-your-defectdojo-api-key}
+    depends_on:
+      - dtrack-postgres
+      - dojo-nginx  # Ensure DefectDojo is up
+    ports:
+      - "${DTRACK_API_PORT:-18081}:8080"
+
+  dtrack-frontend:
+    image: dependencytrack/frontend:4.11.6
+    environment:
+      - API_BASE_URL=https://${CODESPACE_NAME:-localhost}-${DTRACK_API_PORT:-18081}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-localhost}
+    depends_on:
+      - dtrack-apiserver
+    ports:
+      - "${DTRACK_UI_PORT:-18082}:8080"
+
+  dtrack-postgres:
+    image: postgres:16.2
+    environment:
+      - POSTGRES_DB=dtrack
+      - POSTGRES_USER=dtrack
+      - POSTGRES_PASSWORD=dtrack
+    volumes:
+      - dtrack-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  defectdojo_postgres: {}
+  defectdojo_media: {}
+  defectdojo_redis: {}
+  dtrack-postgres-data: {}

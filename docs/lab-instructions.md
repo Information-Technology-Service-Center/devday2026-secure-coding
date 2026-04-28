@@ -141,10 +141,16 @@ semgrep scan --config auto .
 ถ้าไม่มีเซิร์ฟเวอร์ Dependency-Track ให้เก็บ SBOM ไว้ และอธิบายข้อจำกัดแทน
 
 ```bash
-cd infra/dependency-track
-docker compose -f docker-compose.yml -f docker-compose.defectdojo.yml up -d
+cd infra/dependency-track/codspace
+chmod +x run.sh
+./run.sh
 ```
-Demo URL: 
+
+### Demo URL: 
+```bash
+Username: admin
+Password: xxxxx
+```
 - Defectdojo = https://cmu.to/defectdojo
 - Dependency-track = https://cmu.to/dependency-track
 
