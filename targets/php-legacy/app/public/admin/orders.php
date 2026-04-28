@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../includes/db_helper.php';
 require_once __DIR__ . '/../../includes/functions.php';
 
+// Check if user is logged in and is admin
 if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
     header('Location: ../login.php');
     exit;
@@ -13,8 +14,10 @@ $search = isset($_GET['search']) ? $_GET['search'] : '';
 $orders = array();
 
 if ($search) {
+    // Search orders by order number or user name
     $orders = searchOrders($search);
 } else {
+    // Get all orders
     $query = "SELECT o.*, u.email, u.first_name, u.last_name, s.status_name 
               FROM orders o 
               JOIN users u ON o.user_id = u.user_id 
@@ -67,6 +70,7 @@ if ($search) {
         }
         
         function loadOrderDetails(orderId) {
+            // Already loaded via PHP, just showing/hiding
         }
         
         function selectAll(checkbox) {

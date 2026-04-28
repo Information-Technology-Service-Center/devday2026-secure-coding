@@ -4,6 +4,7 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/db_helper.php';
 require_once __DIR__ . '/../includes/functions.php';
 
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
@@ -15,6 +16,7 @@ $success = '';
 $order_number = isset($_GET['order_number']) ? $_GET['order_number'] : (isset($_POST['order_number']) ? $_POST['order_number'] : '');
 $order_details = null;
 
+// Fetch all products
 $query = "SELECT * FROM products ORDER BY product_name";
 $result = mysqli_query($conn, $query);
 $products = array();
@@ -35,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order'])) {
     $order_number = $_POST['order_number'];
     $items = array();
     
+    // Get updated products and quantities
     if (isset($_POST['product_number']) && isset($_POST['quantity'])) {
         $product_numbers = $_POST['product_number'];
         $quantities = $_POST['quantity'];
@@ -154,6 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order'])) {
                     <tbody>
                         <?php foreach ($products as $index => $product): ?>
                             <?php
+                                // Find current quantity for this product
                                 $current_qty = 0;
                                 foreach ($order_details['items'] as $item) {
                                     if ($item['product_number'] === $product['product_number']) {

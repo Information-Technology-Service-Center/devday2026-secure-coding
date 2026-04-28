@@ -6,6 +6,8 @@ $message = '';
 $status = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Since seed.sql runs automatically in docker-compose via docker-entrypoint,
+    // this endpoint just confirms the seeding
     $message = 'Database already seeded via docker-compose initialization. All product statuses and sample products are loaded.';
     $status = 'success';
 }

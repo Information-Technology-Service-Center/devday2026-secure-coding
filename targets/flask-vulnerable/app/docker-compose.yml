@@ -1,14 +1,29 @@
+# =============================================================================
+# Vulnerable docker-compose.yml — For Workshop Exercise Only
+# DO NOT use in production! Contains intentional security misconfigurations.
+# =============================================================================
+
 version: "3.8"
 
 services:
+  # ---------------------------------------------------------------------------
+  # VULNERABILITY 1: No resource limits
+  # An attacker who exploits the app can consume all host memory/CPU
+  # ---------------------------------------------------------------------------
   app:
     build: .
     container_name: vulnerable-app
     restart: always
     ports:
+      # VULNERABILITY 2: Binding to all interfaces (0.0.0.0)
+      # Should bind to 127.0.0.1 only if not needed externally
       - "5000:5000"
+      # VULNERABILITY 3: Debug port exposed to the world
       - "5678:5678"
 
+    # VULNERABILITY 4: Environment variables contain SECRETS in plaintext
+    # These get logged, stored in docker inspect, visible to anyone with
+    # container access, and persist in docker-compose.yml on disk
     environment:
       - DB_HOST=db
       - DB_USER=admin
@@ -20,41 +35,72 @@ services:
       - AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
       - AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
+    # VULNERABILITY 5: No security options — full Linux capabilities
+    # No seccomp, no apparmor, no no-new-privileges
+    # privileged is NOT set here but capabilities are not dropped either
+
+    # VULNERABILITY 6: No healthcheck defined
+    # Docker can't detect if the app is actually running properly
+
+    # VULNERABILITY 7: No read-only root filesystem
+    # writable /tmp, /app — attacker can write malware
+
+    # VULNERABILITY 8: Shared network with database (default bridge)
+    # No network segmentation between services
+
+    # VULNERABILITY 9: Depends_on without condition
+    # App may start before DB is ready, causing connection string leaks in logs
     depends_on:
       - db
 
+    # VULNERABILITY 10: Sensitive volume mount — database data persists
+    # but no encryption at rest
     volumes:
       - ./data:/app/data
+      # VULNERABILITY 11: Mounting host directory gives container
+      # potential access to host filesystem
       - ./uploads:/app/uploads
 
     networks:
       - app-network
 
+  # ---------------------------------------------------------------------------
   db:
+    # VULNERABILITY 12: Using latest tag — no pinned version
     image: postgres:15
+    # VULNERABILITY 13: No resource limits on database
     container_name: vulnerable-db
     restart: always
 
+    # VULNERABILITY 14: Hardcoded credentials in plaintext
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=supersecret123
       - POSTGRES_DB=vulnerableapp
 
+    # VULNERABILITY 15: No volume encryption
     volumes:
       - pgdata:/var/lib/postgresql/data
 
     ports:
+      # VULNERABILITY 16: Database port exposed to host
+      # Only app container should access DB, not the entire network
       - "5432:5432"
 
+    # VULNERABILITY 17: No healthcheck
     networks:
       - app-network
 
+  # ---------------------------------------------------------------------------
+  # VULNERABILITY 18: redis with no auth
   redis:
     image: redis:latest
     container_name: vulnerable-redis
     restart: always
     ports:
       - "6379:6379"
+    # VULNERABILITY 19: Redis without requirepass — anyone can connect
+    # and read/write all data including sessions
     networks:
       - app-network
 
@@ -63,4 +109,6 @@ volumes:
 
 networks:
   app-network:
+    # VULNERABILITY 20: Default bridge network — no encryption in transit
+    # All containers on this network can communicate freely
     driver: bridge

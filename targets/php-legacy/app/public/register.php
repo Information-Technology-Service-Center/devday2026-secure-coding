@@ -15,34 +15,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     
+    // Validate email
     if (!validateEmail($email)) {
         $errors[] = 'Invalid email format';
     }
     
+    // Validate first name
     if (!validateName($first_name)) {
         $errors[] = 'Invalid first name';
     }
     
+    // Validate last name
     if (!validateName($last_name)) {
         $errors[] = 'Invalid last name';
     }
     
+    // Validate phone
     if (!validatePhone($phone)) {
         $errors[] = 'Invalid phone number format';
     }
     
+    // Validate password
     if (!validatePassword($password)) {
         $errors[] = 'Password must be at least 6 characters';
     }
     
+    // Check password confirmation
     if ($password !== $confirm_password) {
         $errors[] = 'Passwords do not match';
     }
     
+    // Check if email already exists
     if (emailExists($email)) {
         $errors[] = 'Email already registered';
     }
     
+    // If no errors, insert user
     if (empty($errors)) {
         if (insertUser($email, $first_name, $last_name, $phone, $password)) {
             $success = 'Registration successful! You can now <a href="login.php">login</a>.';

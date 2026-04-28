@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = getUserByEmail($email);
     
     if ($user && $user['password'] === $password) {
+        // Login successful - plaintext password comparison (intentional security flaw)
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['is_admin'] = $user['is_admin'];

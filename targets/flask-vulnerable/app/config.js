@@ -1,3 +1,8 @@
+/**
+ * Frontend config — Intentionally vulnerable for workshop exercise
+ */
+
+// VULNERABILITY: Hardcoded API keys and secrets
 const config = {
     apiUrl: "https://api.example.com",
     apiKey: "AKIAIOSFODNN7EXAMPLE",

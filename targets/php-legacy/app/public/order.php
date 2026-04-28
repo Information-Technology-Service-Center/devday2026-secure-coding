@@ -4,6 +4,7 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/db_helper.php';
 require_once __DIR__ . '/../includes/functions.php';
 
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
@@ -14,6 +15,7 @@ $error = '';
 $success = '';
 $order_number = '';
 
+// Fetch all products
 $query = "SELECT * FROM products ORDER BY product_name";
 $result = mysqli_query($conn, $query);
 $products = array();
@@ -24,6 +26,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $items = array();
     
+    // Get selected products and quantities
     if (isset($_POST['product_number']) && isset($_POST['quantity'])) {
         $product_numbers = $_POST['product_number'];
         $quantities = $_POST['quantity'];

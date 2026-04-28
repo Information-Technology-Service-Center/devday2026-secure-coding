@@ -1,13 +1,20 @@
+-- ===========================
+-- Database Schema for Order Management System
+-- Legacy PHP 7 Demo (Intentionally Bad Code)
+-- ===========================
+
 DROP DATABASE IF EXISTS order_db;
 CREATE DATABASE order_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE order_db;
 
+-- Table: product_status (Reference data)
 CREATE TABLE product_status (
     status_id INT PRIMARY KEY AUTO_INCREMENT,
     status_code VARCHAR(20) UNIQUE NOT NULL,
     status_name VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: users
 CREATE TABLE users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -20,6 +27,7 @@ CREATE TABLE users (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: products
 CREATE TABLE products (
     product_id INT PRIMARY KEY AUTO_INCREMENT,
     product_number VARCHAR(50) UNIQUE NOT NULL,
@@ -31,6 +39,7 @@ CREATE TABLE products (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: orders
 CREATE TABLE orders (
     order_id INT PRIMARY KEY AUTO_INCREMENT,
     order_number VARCHAR(50) UNIQUE NOT NULL,
@@ -44,6 +53,7 @@ CREATE TABLE orders (
     FOREIGN KEY (status_id) REFERENCES product_status(status_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: order_details
 CREATE TABLE order_details (
     order_detail_id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,

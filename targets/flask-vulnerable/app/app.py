@@ -1,3 +1,11 @@
+"""
+Vulnerable Web Application — For Workshop Exercise Only
+DO NOT deploy this in production!
+
+Contains intentional security vulnerabilities for learning purposes.
+Students should find and fix these issues during the workshop.
+"""
+
 import os
 import hashlib
 import sqlite3
@@ -6,10 +14,12 @@ from flask import Flask, request, jsonify, render_template_string
 
 app = Flask(__name__)
 
+# === VULNERABILITY 1: Hardcoded credentials ===
 DB_PASSWORD = "supersecret123"
 API_KEY = "sk-proj-abc123def456ghi789jkl012mno345pqr678"
 ADMIN_PASSWORD = "admin123"
 
+# === VULNERABILITY 2: Weak secret key ===
 app.secret_key = "secret"
 
 
@@ -24,10 +34,12 @@ def index():
     return jsonify({"status": "running", "version": "1.0.0"})
 
 
+# === VULNERABILITY 3: SQL Injection ===
 @app.route("/api/users")
 def get_users():
     username = request.args.get("username", "")
     conn = get_db()
+    # Bad: string concatenation in SQL query
     query = "SELECT * FROM users WHERE username = '" + username + "'"
     cursor = conn.execute(query)
     users = [dict(row) for row in cursor.fetchall()]
@@ -35,6 +47,7 @@ def get_users():
     return jsonify(users)
 
 
+# === VULNERABILITY 4: SQL Injection (login) ===
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -42,6 +55,7 @@ def login():
     password = data.get("password", "")
 
     conn = get_db()
+    # Bad: SQL injection in login
     query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
     cursor = conn.execute(query)
     user = cursor.fetchone()
@@ -52,9 +66,11 @@ def login():
     return jsonify({"error": "Invalid credentials"}), 401
 
 
+# === VULNERABILITY 5: XSS (Cross-Site Scripting) ===
 @app.route("/search")
 def search():
     q = request.args.get("q", "")
+    # Bad: rendering user input directly into HTML without escaping
     html = f"""
     <html>
     <body>
@@ -67,16 +83,20 @@ def search():
     return render_template_string(html)
 
 
+# === VULNERABILITY 6: Command Injection ===
 @app.route("/api/ping")
 def ping():
     host = request.args.get("host", "")
+    # Bad: direct OS command execution with user input
     result = os.popen(f"ping -c 1 {host}").read()
     return jsonify({"output": result})
 
 
+# === VULNERABILITY 7: Path Traversal ===
 @app.route("/api/files")
 def get_file():
     filename = request.args.get("name", "")
+    # Bad: no path validation, allows ../../etc/passwd
     filepath = os.path.join("/app/uploads", filename)
     try:
         with open(filepath, "r") as f:
@@ -86,6 +106,7 @@ def get_file():
         return jsonify({"error": "File not found"}), 404
 
 
+# === VULNERABILITY 8: Weak password hashing ===
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -93,6 +114,8 @@ def register():
     password = data.get("password", "")
     email = data.get("email", "")
 
+    # Bad: no input validation at all
+    # Bad: using MD5 for password hashing (weak, fast, no salt)
     password_hash = hashlib.md5(password.encode()).hexdigest()
 
     conn = get_db()
@@ -106,8 +129,11 @@ def register():
     return jsonify({"message": "User created"})
 
 
+# === VULNERABILITY 9: Missing authorization ===
 @app.route("/api/admin/users")
 def admin_users():
+    # Bad: no authentication or authorization check
+    # Anyone can access admin endpoint
     conn = get_db()
     cursor = conn.execute("SELECT * FROM users")
     users = [dict(row) for row in cursor.fetchall()]
@@ -117,6 +143,7 @@ def admin_users():
 
 @app.route("/api/admin/delete/<int:user_id>", methods=["DELETE"])
 def admin_delete_user(user_id):
+    # Bad: no auth check, IDOR vulnerability
     conn = get_db()
     conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
@@ -124,11 +151,14 @@ def admin_delete_user(user_id):
     return jsonify({"message": f"User {user_id} deleted"})
 
 
+# === VULNERABILITY 10: Verbose error messages ===
 @app.route("/api/debug")
 def debug():
     try:
+        # Bad: exposing internal information
         result = 1 / 0
     except Exception as e:
+        # Bad: returning full stack trace to user
         import traceback
 
         return jsonify(
@@ -141,11 +171,13 @@ def debug():
         ), 500
 
 
+# === VULNERABILITY 11: SSRF ===
 @app.route("/api/fetch")
 def fetch_url():
     import requests
 
     url = request.args.get("url", "")
+    # Bad: fetching arbitrary URLs from user input (SSRF)
     try:
         resp = requests.get(url, timeout=5)
         return jsonify({"status": resp.status_code, "body": resp.text[:1000]})
@@ -153,6 +185,7 @@ def fetch_url():
         return jsonify({"error": str(e)}), 400
 
 
+# === VULNERABILITY 12: Insecure deserialization ===
 @app.route("/api/import", methods=["POST"])
 def import_data():
     import pickle
@@ -160,9 +193,11 @@ def import_data():
 
     data = request.get_json()
     encoded = data.get("payload", "")
+    # Bad: deserializing untrusted data with pickle
     obj = pickle.loads(base64.b64decode(encoded))
     return jsonify({"imported": str(obj)})
 
 
 if __name__ == "__main__":
+    # Bad: debug mode in production
     app.run(host="0.0.0.0", port=5000, debug=True)

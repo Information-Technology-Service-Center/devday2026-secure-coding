@@ -1,8 +1,18 @@
 #!/usr/bin/env node
 
+/**
+ * PHP Syntax Checker (Docker Version)
+ * 
+ * Validates PHP syntax using `php -l` command inside Docker container.
+ * Used by Git pre-commit hook to prevent committing files with syntax errors.
+ * 
+ * This script is designed for projects where PHP is only available in Docker.
+ */
+
 const { execSync } = require('child_process');
 const path = require('path');
 
+// Get files from command line arguments
 const files = process.argv.slice(2);
 
 if (files.length === 0) {
@@ -10,6 +20,7 @@ if (files.length === 0) {
   process.exit(0);
 }
 
+// Check if Docker is running
 try {
   execSync('docker --version', { stdio: 'pipe' });
 } catch (error) {
@@ -25,12 +36,16 @@ console.log(`\n🔍 Checking PHP syntax for ${files.length} file(s) using Docker
 
 files.forEach(file => {
   try {
+    // Get relative path from current working directory
     const absolutePath = path.resolve(file);
     const cwd = process.cwd();
     let relativePath = path.relative(cwd, absolutePath);
     
+    // Convert Windows path to Unix-style path for Docker
     relativePath = relativePath.replace(/\\/g, '/');
     
+    // Run php -l inside the Docker container
+    // We mount the project directory and run syntax check on the relative file
     const dockerCommand = `docker run --rm -v "${cwd}:/app" -w /app php:7.4-cli php -l "${relativePath}"`;
     
     execSync(dockerCommand, {
@@ -44,6 +59,7 @@ files.forEach(file => {
     errorCount++;
     console.error(`✗ ${file}`);
     
+    // Display the error output from PHP
     if (error.stdout) {
       console.error(error.stdout.trim());
     }

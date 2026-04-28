@@ -1,9 +1,16 @@
+-- ===========================
+-- Seed Data for Order Management System
+-- Legacy PHP 7 Demo
+-- ===========================
+
 USE order_db;
 
+-- Seed Product Status
 INSERT INTO product_status (status_id, status_code, status_name) VALUES
 (1, 'PENDING', 'รอยืนยันคำสั่งซื้อ'),
 (2, 'CONFIRMED', 'ยืนยันคำสั่งซื้อ');
 
+-- Seed Products
 INSERT INTO products (product_number, product_name, product_description, price, stock_quantity) VALUES
 ('PRD001', 'สินค้า A - เสื้อยืด', 'เสื้อยืดคอกลม สีพื้น คุณภาพดี', 299.00, 50),
 ('PRD002', 'สินค้า B - กางเกงยีนส์', 'กางเกงยีนส์ขายาว ผ้านิ่ม ใส่สบาย', 890.00, 30),
@@ -16,6 +23,7 @@ INSERT INTO products (product_number, product_name, product_description, price, 
 ('PRD009', 'สินค้า I - กระเป๋าตัง', 'กระเป๋าสตางค์หนังแท้ ช่องใส่การ์ดเยอะ', 450.00, 25),
 ('PRD010', 'สินค้า J - แว่นกันแดด', 'แว่นกันแดด กรองแสง UV 100%', 750.00, 18);
 
+-- Seed Test Users (Optional - plaintext passwords!)
 INSERT INTO users (email, first_name, last_name, phone, password, is_admin) VALUES
 ('admin@test.com', 'Admin', 'System', '0801111111', 'admin123', 1),
 ('user1@test.com', 'สมชาย', 'ใจดี', '0812222222', 'user123', 0),

@@ -1,3 +1,4 @@
+# Intentionally using outdated/vulnerable versions for workshop
 Flask==2.0.1
 requests>=2.32
 Jinja2==3.0.3

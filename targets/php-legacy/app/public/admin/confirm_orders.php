@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../includes/db_helper.php';
 require_once __DIR__ . '/../../includes/functions.php';
 
+// Check if user is logged in and is admin
 if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
     header('Location: ../login.php');
     exit;
