@@ -141,7 +141,7 @@ semgrep scan --config auto .
 ถ้าไม่มีเซิร์ฟเวอร์ Dependency-Track ให้เก็บ SBOM ไว้ และอธิบายข้อจำกัดแทน
 
 ```bash
-cd infra/dependency-track/codspace
+cd infra/dependency-track/codespace
 chmod +x run.sh
 ./run.sh
 ```
