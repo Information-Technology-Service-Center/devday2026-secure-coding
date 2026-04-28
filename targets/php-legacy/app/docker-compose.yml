@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    container_name: phpdemo_app
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./public:/var/www/html
+      - ./config:/var/www/config
+      - ./includes:/var/www/includes
+      - ./sql:/var/www/sql
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: mysql:5.7
+    container_name: phpdemo_db
+    environment:
+      MYSQL_DATABASE: order_db
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpass123
+      MYSQL_ROOT_PASSWORD: rootpass123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:

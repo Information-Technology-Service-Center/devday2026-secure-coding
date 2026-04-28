@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: vulnerable-app
+    restart: always
+    ports:
+      - "5000:5000"
+      - "5678:5678"
+
+    environment:
+      - DB_HOST=db
+      - DB_USER=admin
+      - DB_PASSWORD=supersecret123
+      - API_KEY=sk-proj-abc123def456ghi789jkl012mno345pqr678
+      - FLASK_SECRET_KEY=my-super-secret-key
+      - JWT_SECRET=another-secret-key-12345
+      - STRIPE_KEY=sk_live_EXAMPLE_REPLACE_THIS_WITH_REAL_KEY
+      - AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+      - AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+    depends_on:
+      - db
+
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    container_name: vulnerable-db
+    restart: always
+
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=supersecret123
+      - POSTGRES_DB=vulnerableapp
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    ports:
+      - "5432:5432"
+
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    container_name: vulnerable-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:
+    driver: bridge

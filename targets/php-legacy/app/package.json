@@ -1,0 +1,22 @@
+{
+  "name": "phpdemo_badcode",
+  "version": "1.0.0",
+  "description": "Legacy PHP demo project with bad code patterns",
+  "private": true,
+  "scripts": {
+    "prepare": "husky install",
+    "lint:php": "node scripts/check-php-syntax.js"
+  },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "*.php": [
+      "node scripts/check-php-syntax-docker.js"
+    ]
+  },
+  "keywords": ["php", "legacy", "demo"],
+  "author": "",
+  "license": "MIT"
+}

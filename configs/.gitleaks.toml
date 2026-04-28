@@ -1,0 +1,37 @@
+title = "lab-devday-ep3 gitleaks config"
+
+[allowlist]
+description = "Allowlist workshop docs/solutions and generated reports"
+paths = [
+  '''docs/.*''',
+  '''reports/.*''',
+  '''targets/.*/solutions/.*''',
+]
+
+# NOTE:
+# This lab intentionally includes hardcoded secrets. We keep a small, explicit
+# ruleset here so the workshop behaves consistently across environments.
+
+[[rules]]
+id = "aws-access-key-id"
+description = "AWS access key id"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "aws-secret-access-key"
+description = "AWS secret access key"
+regex = '''(?i)aws(.{0,20})?secret(.{0,20})?["'][0-9a-zA-Z/+=]{20,}["']'''
+tags = ["aws", "secret"]
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI-style API key (lab example)"
+regex = '''sk-(?:proj-)?[A-Za-z0-9]{20,}'''
+tags = ["openai", "key"]
+
+[[rules]]
+id = "generic-password-assignment"
+description = "Hardcoded password assignment"
+regex = '''(?i)\b(password|db_password|admin_password)\b.{0,20}["'][^"'\n]{6,}["']'''
+tags = ["password"]
