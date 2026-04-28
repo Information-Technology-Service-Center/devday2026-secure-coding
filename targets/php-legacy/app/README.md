@@ -70,7 +70,7 @@ phpdemo_badcode/
 
 1. **Clone the repository**
    ```bash
-   cd f:\project\phpdemo_badcode
+   cd targets/php-legacy/app
    ```
 
 2. **Build and start containers**

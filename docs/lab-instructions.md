@@ -11,7 +11,7 @@
    - PHP: [`targets/php-legacy/app`](../targets/php-legacy/app)
    - Flask: [`targets/flask-vulnerable/app`](../targets/flask-vulnerable/app)
 2. เข้าโฟลเดอร์แลป:
-   - `cd lab-devday-ep3`
+   - `cd devday2026-secure-coding`
 3. ตรวจสอบว่าเครื่องมือพร้อมใช้งาน:
    - `semgrep --version`
    - `syft version`
@@ -58,6 +58,8 @@ brew install syft
 **Linux**:
 ```bash
 sudo -s
+```
+```bash
 curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 ```
 
@@ -85,6 +87,8 @@ brew install gitleaks
 # ดาวน์โหลดจาก https://github.com/gitleaks/gitleaks/releases
 wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz
 tar -xzf gitleaks_8.18.2_linux_x64.tar.gz
+```
+```bash
 sudo mv gitleaks /usr/local/bin/
 exit
 ```
@@ -113,6 +117,17 @@ chmod +x ./scripts/*
 ```bash
 cd targets/php-legacy/app/
 semgrep scan --config auto .
+```
+
+ถ้าต้องการสร้าง report ที่เป็น json :
+```bash
+cd targets/php-legacy/app/
+semgrep scan \
+  --config auto \
+  --disable-version-check \
+  --json \
+  --output semgrep.json \
+  .
 ```
 
 ### ขั้นตอน 2: วิเคราะห์ผล
@@ -168,6 +183,15 @@ Password: xxxxx
 ```bash
 cd targets/php-legacy/app/
 gitleaks detect --source . --verbose
+```
+
+ถ้าต้องการสร้าง report ที่เป็น json
+```bash
+gitleaks detect \
+  --source . \
+  --no-git \
+  --report-format json \
+  --report-path gitleaks.json
 ```
 
 ### ขั้นตอน 2: อ่านผลสแกน
