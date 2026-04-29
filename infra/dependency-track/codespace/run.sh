@@ -2,8 +2,6 @@
 
 #!/bin/bash
 
-# Navigate to the codespace directory
-cd /workspaces/devday2026-secure-coding/infra/dependency-track/codespace
 
 # Start database and redis services first
 echo "Starting database services..."
