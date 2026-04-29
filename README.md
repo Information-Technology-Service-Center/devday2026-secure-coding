@@ -20,7 +20,6 @@
 - [`targets/php-legacy/app/`](targets/php-legacy/app/) (แอป PHP แบบ legacy ที่มีช่องโหว่โดยตั้งใจ: SQLi / รหัสผ่าน plaintext ฯลฯ)
 - [`targets/flask-vulnerable/app/`](targets/flask-vulnerable/app/) (intentionally vulnerable Flask app, 12 issues)
 
-แต่ละ target จะมีไฟล์ `UPSTREAM.md` เพื่ออ้างอิงแหล่งที่มาของโค้ดต้นฉบับ
 
 ## Tech Stack ของ Targets
 
@@ -31,7 +30,7 @@
 - การรันในแลป: Docker + Docker Compose (ดูไฟล์ `Dockerfile` และ `docker-compose.yml` ในโฟลเดอร์ target)
 
 ## Quick Start
-1. `cd lab-devday-ep3`
+1. `cd devday2026-secure-coding`
 2. เลือก target ที่จะทำ
 3. รันสแกนทั้งหมด (ผลลัพธ์อยู่ที่ `reports/` และมีไฟล์ `*.latest.*` สำหรับเปิดดูเร็ว)
 
