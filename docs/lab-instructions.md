@@ -164,7 +164,7 @@ chmod +x run.sh
 ### Demo URL: 
 ```bash
 Username: admin
-Password: xxxxx
+Password: 9OwfYmXcOhEwIdkpa2593g
 ```
 - Defectdojo = https://cmu.to/defectdojo
 - Dependency-track = https://cmu.to/dependency-track
